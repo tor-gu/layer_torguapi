@@ -7,7 +7,6 @@
         "-v",
         "--cov=src",
         "--cov-report=term",
-        "--pdb",
         "tests"
     ],
     "python.testing.unittestEnabled": false,
