@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for layer_torguapi
+
+Globals:
+  Function:
+    Timeout: 3
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+
+Resources:
+  LayerTorguapi:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: layer_torguapi
+      Description: Layer for the tor-gu api python library
+      ContentUri: src
+      CompatibleRuntimes:
+      - python3.9
+    Metadata:
+      BuildMethod: python3.9
+
+Outputs:
+  LayerTorguapi:
+    Description: layer_torguapi ARN
+    Value: !Ref LayerTorguapi

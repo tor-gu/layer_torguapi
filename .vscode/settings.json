@@ -1,0 +1,15 @@
+{
+    "python.envFile": "${workspaceFolder}/.envs",
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "python.testing.pytestArgs": [
+        "-v",
+        "--cov=src",
+        "--cov-report=term",
+        "--pdb",
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
