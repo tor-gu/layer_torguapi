@@ -47,8 +47,10 @@ Parameters:
     Default: "layer_torguapi_test"
   TestingPipelineExecutionRole:
     Type: String
+    Default: ""
   TestingCloudFormationExecutionRole:
     Type: String
+    Default: ""
   TestingArtifactBucket:
     Type: String
     Default: "aws-sam-cli-managed-test-pipeline-artifactsbucket-1rsum71km5flv"
@@ -66,8 +68,10 @@ Parameters:
     Default: "layer_torguapi"
   ProdPipelineExecutionRole:
     Type: String
+    Default: ""
   ProdCloudFormationExecutionExeRole:
     Type: String
+    Default: ""
   ProdArtifactBucket:
     Type: String
     Default: "aws-sam-cli-managed-prod-pipeline-artifactsbucket-lshck0q70sdj"
