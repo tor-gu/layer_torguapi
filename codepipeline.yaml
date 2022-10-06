@@ -15,27 +15,6 @@ Parameters:
   SamTemplate:
     Type: String
     Default: "template.yaml"
-  TestingRegion:
-    Type: String
-    Default: "us-east-1"
-  TestingStackName:
-    Type: String
-    Default: "LayerTorguapiTest"
-  TestingPipelineExecutionRole:
-    Type: String
-    Default: ""
-  TestingCloudFormationExecutionRole:
-    Type: String
-    Default: ""
-  TestingArtifactBucket:
-    Type: String
-    Default: "aws-sam-cli-managed-test-pipeline-artifactsbucket-1rsum71km5flv"
-  TestingImageRepository:
-    Type: String
-    # If there are functions with "Image" PackageType in your template,
-    # Update the line below with image repository URL and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
-    # prod "sam package" and "sam deploy" commands in buildspec files (in pipeline/).
-    Default: ""
   ProdRegion:
     Type: String
     Default: "us-east-1"
@@ -132,8 +111,6 @@ Resources:
                   {
                     "FeatureGitBranch": "${FeatureGitBranch}",
                     "CodeStarConnectionArn": "${CodeStarConnectionArn}",
-                    "TestingPipelineExecutionRole": "${TestingPipelineExecutionRole}",
-                    "TestingCloudFormationExecutionRole": "${TestingCloudFormationExecutionRole}",
                     "ProdPipelineExecutionRole": "${ProdPipelineExecutionRole}",
                     "ProdCloudFormationExecutionRole": "${ProdCloudFormationExecutionRole}"
                   }
@@ -200,45 +177,6 @@ Resources:
                   - Name: SourceCodeAsZip
                 OutputArtifacts:
                   - Name: BuildArtifactAsZip
-          - !Ref AWS::NoValue
-
-        - !If
-          - IsMainBranchPipeline
-          - Name: DeployTest
-            Actions:
-              - Name: DeployTest
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Provider: CodeBuild
-                  Version: "1"
-                Configuration:
-                  ProjectName: !Ref CodeBuildProjectDeploy
-                  EnvironmentVariables: !Sub |
-                    [
-                      {"name": "ENV_TEMPLATE", "value": "packaged-test.yaml"},
-                      {"name": "ENV_REGION", "value": "${TestingRegion}"},
-                      {"name": "ENV_STACK_NAME", "value": "${TestingStackName}"},
-                      {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${TestingPipelineExecutionRole}"},
-                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${TestingCloudFormationExecutionRole}"},
-                      {"name": "ENV_BUCKET", "value": "${TestingArtifactBucket}"},
-                      {"name": "ENV_IMAGE_REPOSITORY", "value": "${TestingImageRepository}"}
-                    ]
-                InputArtifacts:
-                  - Name: BuildArtifactAsZip
-                RunOrder: 1
-              # Uncomment the following step for running the integration tests
-              # - Name: IntegrationTest
-              #   ActionTypeId:
-              #     Category: Build
-              #     Owner: AWS
-              #     Provider: CodeBuild
-              #     Version: "1"
-              #   Configuration:
-              #     ProjectName: !Ref CodeBuildProjectIntegrationTest
-              #   InputArtifacts:
-              #     - Name: SourceCodeAsZip
-              #   RunOrder: 2
           - !Ref AWS::NoValue
 
         - !If
@@ -541,16 +479,6 @@ Resources:
         EnvironmentVariables:
           - Name: SAM_TEMPLATE
             Value: !Ref SamTemplate
-          - Name: TESTING_REGION
-            Value: !Ref TestingRegion
-          - Name: TESTING_PIPELINE_EXECUTION_ROLE
-            Value: !Ref TestingPipelineExecutionRole
-          - Name: TESTING_CLOUDFORMATION_EXECUTION_ROLE
-            Value: !Ref TestingCloudFormationExecutionRole
-          - Name: TESTING_ARTIFACT_BUCKET
-            Value: !Ref TestingArtifactBucket
-          - Name: TESTING_IMAGE_REPOSITORY
-            Value: !Ref TestingImageRepository
           - Name: FEATURE_BRANCH_NAME
             Value: !Ref FeatureGitBranch
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -572,20 +500,12 @@ Resources:
         EnvironmentVariables:
           - Name: SAM_TEMPLATE
             Value: !Ref SamTemplate
-          - Name: TESTING_REGION
-            Value: !Ref TestingRegion
           - Name: PROD_REGION
             Value: !Ref ProdRegion
-          - Name: TESTING_PIPELINE_EXECUTION_ROLE
-            Value: !Ref TestingPipelineExecutionRole
           - Name: PROD_PIPELINE_EXECUTION_ROLE
             Value: !Ref ProdPipelineExecutionRole
-          - Name: TESTING_ARTIFACT_BUCKET
-            Value: !Ref TestingArtifactBucket
           - Name: PROD_ARTIFACT_BUCKET
             Value: !Ref ProdArtifactBucket
-          - Name: TESTING_IMAGE_REPOSITORY
-            Value: !Ref TestingImageRepository
           - Name: PROD_IMAGE_REPOSITORY
             Value: !Ref ProdImageRepository
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -628,12 +548,6 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
-  TestingPipelineExecutionRole:
-    Description: Execution role for pipeline in test
-    Value: !Ref TestingPipelineExecutionRole
-  TestingCloudFormationExecutionRole:
-    Description: Execution role for cloudformation in test
-    Value: !Ref TestingCloudFormationExecutionRole
   ProdPipelineExecutionRole:
     Description: Execution role for pipeline in prod
     Value: !Ref ProdPipelineExecutionRole
