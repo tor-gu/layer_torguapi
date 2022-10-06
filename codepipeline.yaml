@@ -131,7 +131,8 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "FeatureGitBranch": "${FeatureGitBranch}",
-                    "CodeStarConnectionArn": "${CodeStarConnectionArn}"
+                    "CodeStarConnectionArn": "${CodeStarConnectionArn}",
+                    "TestingPipelineExecutionRole": "${TestingPipelineExecutionRole}"
                   }
               InputArtifacts:
                 - Name: SourceCodeAsZip
@@ -626,3 +627,5 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
+  TestingPipelineExecutionRole:
+    Value: !Ref TestingPipelineExecutionRole
