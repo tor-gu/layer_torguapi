@@ -20,7 +20,7 @@ Parameters:
     Default: "us-east-1"
   TestingStackName:
     Type: String
-    Default: "layer_torguapi_test"
+    Default: "LayerTorguapiTest"
   TestingPipelineExecutionRole:
     Type: String
     Default: ""
@@ -41,7 +41,7 @@ Parameters:
     Default: "us-east-1"
   ProdStackName:
     Type: String
-    Default: "layer_torguapi"
+    Default: "LayerTorguapi"
   ProdPipelineExecutionRole:
     Type: String
     Default: ""
