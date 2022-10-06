@@ -132,7 +132,10 @@ Resources:
                   {
                     "FeatureGitBranch": "${FeatureGitBranch}",
                     "CodeStarConnectionArn": "${CodeStarConnectionArn}",
-                    "TestingPipelineExecutionRole": "${TestingPipelineExecutionRole}"
+                    "TestingPipelineExecutionRole": "${TestingPipelineExecutionRole}",
+                    "TestingCloudFormationExecutionRole": "${TestingCloudFormationExecutionRole}",
+                    "ProdPipelineExecutionRole": "${ProdPipelineExecutionRole}",
+                    "ProdCloudFormationExecutionRole": "${ProdCloudFormationExecutionRole}"
                   }
               InputArtifacts:
                 - Name: SourceCodeAsZip
@@ -628,4 +631,14 @@ Outputs:
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
   TestingPipelineExecutionRole:
+    Description: Execution role for pipeline in test
     Value: !Ref TestingPipelineExecutionRole
+  TestingCloudFormationExecutionRole:
+    Description: Execution role for cloudformation in test
+    Value: !Ref TestingCloudFormationExecutionRole
+  ProdPipelineExecutionRole:
+    Description: Execution role for pipeline in prod
+    Value: !Ref ProdPipelineExecutionRole
+  ProdCloudFormationExecutionRole:
+    Description: Execution role for cloudformation in prod
+    Value: !Ref ProdCloudFormationExecutionRole
