@@ -45,7 +45,7 @@ Parameters:
   ProdPipelineExecutionRole:
     Type: String
     Default: ""
-  ProdCloudFormationExecutionExeRole:
+  ProdCloudFormationExecutionRole:
     Type: String
     Default: ""
   ProdArtifactBucket:
