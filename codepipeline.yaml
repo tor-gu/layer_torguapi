@@ -269,7 +269,7 @@ Resources:
                       {"name": "ENV_REGION", "value": "${ProdRegion}"},
                       {"name": "ENV_STACK_NAME", "value": "${ProdStackName}"},
                       {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${ProdPipelineExecutionRole}"},
-                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${ProdCloudFormationExecutionExeRole}"},
+                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${ProdCloudFormationExecutionRole}"},
                       {"name": "ENV_BUCKET", "value": "${ProdArtifactBucket}"},
                       {"name": "ENV_IMAGE_REPOSITORY", "value": "${ProdImageRepository}"}
                     ]
