@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion : '2010-09-09'
 Description: >
-  This template deploys a CodePipeline to build and deploy layer_torguapi
+  CodePipeline for layer_torguapi (build and deploy)
 
 Parameters:
   GitProviderType:
@@ -158,7 +158,7 @@ Resources:
                 ProjectName: !Ref CodeBuildProjectDeploy
                 EnvironmentVariables: !Sub |
                   [
-                    {"name": "ENV_TEMPLATE", "value": "packaged-prod.yaml"},
+                    {"name": "ENV_TEMPLATE", "value": "packaged.yaml"},
                     {"name": "ENV_REGION", "value": "${Region}"},
                     {"name": "ENV_STACK_NAME", "value": "${DeployStackName}"},
                     {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${PipelineExecutionRole}"},
@@ -417,11 +417,11 @@ Resources:
         EnvironmentVariables:
           - Name: SAM_TEMPLATE
             Value: !Ref SamTemplate
-          - Name: PROD_REGION
+          - Name: REGION
             Value: !Ref Region
-          - Name: PROD_PIPELINE_EXECUTION_ROLE
+          - Name: PIPELINE_EXECUTION_ROLE
             Value: !Ref PipelineExecutionRole
-          - Name: PROD_ARTIFACT_BUCKET
+          - Name: ARTIFACT_BUCKET
             Value: !Ref ArtifactBucket
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
