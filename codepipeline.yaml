@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion : '2010-09-09'
 Description: >
-  This template deploys a CodePipeline to build and deploy layer_torguapi
+  CodePipeline for layer_torguapi (build and deploy)
 
 Parameters:
   GitProviderType:
@@ -11,25 +11,19 @@ Parameters:
     Default: "tor-gu/layer_torguapi"
   MainGitBranch:
     Type: String
-    Default: "master"
   SamTemplate:
     Type: String
     Default: "template.yaml"
-  ProdRegion:
+  Region:
     Type: String
-    Default: "us-east-1"
-  ProdStackName:
+  DeployStackName:
     Type: String
-    Default: "LayerTorguapi"
-  ProdPipelineExecutionRole:
+  PipelineExecutionRole:
     Type: String
-    Default: ""
-  ProdCloudFormationExecutionRole:
+  CloudFormationExecutionRole:
     Type: String
-    Default: ""
-  ProdArtifactBucket:
+  ArtifactBucket:
     Type: String
-    Default: "aws-sam-cli-managed-prod-pipeline-artifactsbucket-lshck0q70sdj"
   CodeStarConnectionArn:
     Type: String
     Default: ""
@@ -98,8 +92,12 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "CodeStarConnectionArn": "${CodeStarConnectionArn}",
-                    "ProdPipelineExecutionRole": "${ProdPipelineExecutionRole}",
-                    "ProdCloudFormationExecutionRole": "${ProdCloudFormationExecutionRole}"
+                    "PipelineExecutionRole": "${PipelineExecutionRole}",
+                    "CloudFormationExecutionRole": "${CloudFormationExecutionRole}",
+                    "MainGitBranch": "${MainGitBranch}",
+                    "ArtifactBucket": "${ArtifactBucket}",
+                    "Region": "${Region}",
+                    "DeployStackName": "${DeployStackName}"
                   }
               InputArtifacts:
                 - Name: SourceCodeAsZip
@@ -160,12 +158,12 @@ Resources:
                 ProjectName: !Ref CodeBuildProjectDeploy
                 EnvironmentVariables: !Sub |
                   [
-                    {"name": "ENV_TEMPLATE", "value": "packaged-prod.yaml"},
-                    {"name": "ENV_REGION", "value": "${ProdRegion}"},
-                    {"name": "ENV_STACK_NAME", "value": "${ProdStackName}"},
-                    {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${ProdPipelineExecutionRole}"},
-                    {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${ProdCloudFormationExecutionRole}"},
-                    {"name": "ENV_BUCKET", "value": "${ProdArtifactBucket}"}
+                    {"name": "ENV_TEMPLATE", "value": "packaged.yaml"},
+                    {"name": "ENV_REGION", "value": "${Region}"},
+                    {"name": "ENV_STACK_NAME", "value": "${DeployStackName}"},
+                    {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${PipelineExecutionRole}"},
+                    {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${CloudFormationExecutionRole}"},
+                    {"name": "ENV_BUCKET", "value": "${ArtifactBucket}"}
                   ]
               InputArtifacts:
                 - Name: BuildArtifactAsZip
@@ -419,12 +417,12 @@ Resources:
         EnvironmentVariables:
           - Name: SAM_TEMPLATE
             Value: !Ref SamTemplate
-          - Name: PROD_REGION
-            Value: !Ref ProdRegion
-          - Name: PROD_PIPELINE_EXECUTION_ROLE
-            Value: !Ref ProdPipelineExecutionRole
-          - Name: PROD_ARTIFACT_BUCKET
-            Value: !Ref ProdArtifactBucket
+          - Name: REGION
+            Value: !Ref Region
+          - Name: PIPELINE_EXECUTION_ROLE
+            Value: !Ref PipelineExecutionRole
+          - Name: ARTIFACT_BUCKET
+            Value: !Ref ArtifactBucket
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
@@ -448,9 +446,9 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
-  ProdPipelineExecutionRole:
-    Description: Execution role for pipeline in prod
-    Value: !Ref ProdPipelineExecutionRole
-  ProdCloudFormationExecutionRole:
-    Description: Execution role for cloudformation in prod
-    Value: !Ref ProdCloudFormationExecutionRole
+  PipelineExecutionRole:
+    Description: Execution role for this pipeline
+    Value: !Ref PipelineExecutionRole
+  CloudFormationExecutionRole:
+    Description: Execution role for stack deployment
+    Value: !Ref CloudFormationExecutionRole

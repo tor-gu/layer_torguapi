@@ -12,12 +12,12 @@ phases:
   build:
     commands:
       - sam build --use-container --template ${SAM_TEMPLATE}
-      - . ./assume-role.sh ${PROD_PIPELINE_EXECUTION_ROLE} prod-package
-      - sam package --s3-bucket ${PROD_ARTIFACT_BUCKET}
-                    --region ${PROD_REGION}
-                    --output-template-file packaged-prod.yaml
+      - . ./assume-role.sh ${PIPELINE_EXECUTION_ROLE} prod-package
+      - sam package --s3-bucket ${ARTIFACT_BUCKET}
+                    --region ${REGION}
+                    --output-template-file packaged.yaml
 artifacts:
   files:
-    - packaged-prod.yaml
+    - packaged.yaml
     - assume-role.sh
     - pipeline/*
