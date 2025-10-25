@@ -18,9 +18,9 @@ Resources:
       Description: Layer for the tor-gu api python library
       ContentUri: src
       CompatibleRuntimes:
-      - python3.9
+      - python3.12
     Metadata:
-      BuildMethod: python3.9
+      BuildMethod: python3.12
 
 Outputs:
   LayerTorguapi:
