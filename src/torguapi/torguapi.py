@@ -1,6 +1,7 @@
 import json
 import os
 from http import HTTPStatus
+from urllib.parse import quote, urlencode
 
 
 class TorguapiError(Exception):
@@ -48,7 +49,7 @@ def torguapi_get_page_parameters(query_parameters):
     return page_params
 
 
-def torguapi_make_links_and_meta(aux, url_path):
+def torguapi_make_links_and_meta(aux, url_path, query_params=None):
     """
     Builds links and meta dicts for use in a torguapi reply.
 
@@ -58,13 +59,17 @@ def torguapi_make_links_and_meta(aux, url_path):
         aux: A dict of variables to build the pagination and meta
         url_path: A string representing the API path, excluding the API_ROOT and
             leading '/', e.g. 'foo/bar/1234'
+        query_params: Optional dict of non-pagination query parameters (e.g.
+            filters) to include in every link. Pass only parameters the API has
+            recognised and validated, not the raw queryStringParameters.
+            page_number and page_size are ignored; the values in aux are used.
 
     Returns:
         Two dicts, links and meta, suitable for passing to torguapi_results
     """
     calculate_page_count(aux)
     url_base = make_url_base(url_path)
-    links = make_page_links(aux, url_base)
+    links = make_page_links(aux, url_base, query_params)
     meta = make_meta(aux)
     return links, meta
 
@@ -150,28 +155,54 @@ def make_torguapi_json(status_code, body):
     }
 
 
-def make_page_link(base_url, page_number, page_size):
+def make_query_string(query_params=None, page_number=None, page_size=None):
+    """
+    Builds a URL-encoded query string.
+
+    The extra query_params come first, sorted by key, followed by page_number
+    and page_size (if given). Any page_number/page_size keys and None values in
+    query_params are dropped.
+    """
+    params = {
+        key: value
+        for key, value in sorted((query_params or {}).items())
+        if key not in ("page_number", "page_size") and value is not None
+    }
+    if page_number is not None:
+        params["page_number"] = page_number
+    if page_size is not None:
+        params["page_size"] = page_size
+    return urlencode(params, quote_via=quote, safe="")
+
+
+def make_page_link(base_url, page_number, page_size, query_params=None):
     """Builds a page link for the links dict"""
-    return f"{base_url}?page_number={page_number}&page_size={page_size}"
+    query_string = make_query_string(query_params, page_number, page_size)
+    return f"{base_url}?{query_string}"
 
 
-def make_page_links(aux, url_base):
+def make_page_links(aux, url_base, query_params=None):
     """Makes all relevant page links as a dict"""
     links = {}
     if "page_number" not in aux:
-        links["self"] = url_base
+        query_string = make_query_string(query_params)
+        links["self"] = f"{url_base}?{query_string}" if query_string else url_base
     else:
         if "page_size" not in aux:
             raise TorguapiError("page_size param missing")
         page_number = aux["page_number"]
         page_size = aux["page_size"]
-        links["self"] = make_page_link(url_base, page_number, page_size)
+        links["self"] = make_page_link(url_base, page_number, page_size, query_params)
         if "page_count" in aux:
             page_count = aux["page_count"]
             if page_number > 1:
-                links["previous"] = make_page_link(url_base, page_number - 1, page_size)
+                links["previous"] = make_page_link(
+                    url_base, page_number - 1, page_size, query_params
+                )
             if page_number < page_count:
-                links["next"] = make_page_link(url_base, page_number + 1, page_size)
+                links["next"] = make_page_link(
+                    url_base, page_number + 1, page_size, query_params
+                )
     return links
 
 

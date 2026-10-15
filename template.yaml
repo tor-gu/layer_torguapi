@@ -17,6 +17,7 @@ Resources:
       LayerName: layer_torguapi
       Description: Layer for the tor-gu api python library
       ContentUri: src
+      RetentionPolicy: Retain
       CompatibleRuntimes:
       - python3.12
     Metadata:

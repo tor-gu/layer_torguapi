@@ -274,3 +274,115 @@ def test_torguapi_get_page_parameters_5():
     query_parameters = {"a": "b", "page_size": "37", "page_number": "foo"}
     with pytest.raises(torguapi.TorguapiInvalidRequest):
         torguapi.torguapi_get_page_parameters(query_parameters)
+
+
+def test_make_page_link_2():
+    """make_page_link with query_params None or empty is unchanged"""
+    base_url = "https://example.com"
+    expected_link = "https://example.com?page_number=3&page_size=10"
+    assert expected_link == torguapi.make_page_link(base_url, 3, 10, None)
+    assert expected_link == torguapi.make_page_link(base_url, 3, 10, {})
+
+
+def test_make_page_link_3():
+    """make_page_link escapes space, '&', '/' and '='"""
+    base_url = "https://example.com"
+    query_params = {"agency": "A & B/C=D"}
+    expected_link = (
+        "https://example.com?agency=A%20%26%20B%2FC%3DD&page_number=3&page_size=10"
+    )
+    assert expected_link == torguapi.make_page_link(base_url, 3, 10, query_params)
+
+
+def test_make_page_links_7():
+    """make_page_links with one filter parameter, first page"""
+    url_base = "https://example.com"
+    aux = {"page_number": 1, "page_size": 100, "page_count": 10}
+    links = torguapi.make_page_links(aux, url_base, {"year": "2023"})
+    self_link = "https://example.com?year=2023&page_number=1&page_size=100"
+    next_link = "https://example.com?year=2023&page_number=2&page_size=100"
+    assert {"self": self_link, "next": next_link} == links
+
+
+def test_make_page_links_8():
+    """make_page_links with one filter parameter, middle page"""
+    url_base = "https://example.com"
+    aux = {"page_number": 4, "page_size": 100, "page_count": 10}
+    links = torguapi.make_page_links(aux, url_base, {"year": "2023"})
+    self_link = "https://example.com?year=2023&page_number=4&page_size=100"
+    prev_link = "https://example.com?year=2023&page_number=3&page_size=100"
+    next_link = "https://example.com?year=2023&page_number=5&page_size=100"
+    assert {"self": self_link, "previous": prev_link, "next": next_link} == links
+
+
+def test_make_page_links_9():
+    """make_page_links with one filter parameter, last page"""
+    url_base = "https://example.com"
+    aux = {"page_number": 10, "page_size": 100, "page_count": 10}
+    links = torguapi.make_page_links(aux, url_base, {"year": "2023"})
+    self_link = "https://example.com?year=2023&page_number=10&page_size=100"
+    prev_link = "https://example.com?year=2023&page_number=9&page_size=100"
+    assert {"self": self_link, "previous": prev_link} == links
+
+
+def test_make_page_links_10():
+    """make_page_links with several parameters puts them in sorted order"""
+    url_base = "https://example.com"
+    aux = {"page_number": 2, "page_size": 100}
+    query_params = {"year": "2023", "county": "Essex", "agency": "Newark"}
+    links = torguapi.make_page_links(aux, url_base, query_params)
+    self_link = (
+        "https://example.com?agency=Newark&county=Essex&year=2023"
+        "&page_number=2&page_size=100"
+    )
+    assert {"self": self_link} == links
+
+
+def test_make_page_links_11():
+    """make_page_links ignores page_number/page_size in query_params"""
+    url_base = "https://example.com"
+    aux = {"page_number": 4, "page_size": 100, "page_count": 10}
+    query_params = {"page_number": "99", "page_size": "7", "year": "2023"}
+    links = torguapi.make_page_links(aux, url_base, query_params)
+    self_link = "https://example.com?year=2023&page_number=4&page_size=100"
+    prev_link = "https://example.com?year=2023&page_number=3&page_size=100"
+    next_link = "https://example.com?year=2023&page_number=5&page_size=100"
+    assert {"self": self_link, "previous": prev_link, "next": next_link} == links
+
+
+def test_make_page_links_12():
+    """make_page_links no pagination, with query_params"""
+    url_base = "https://example.com"
+    links = torguapi.make_page_links({}, url_base, {"year": "2023", "county": "A B"})
+    assert {"self": "https://example.com?county=A%20B&year=2023"} == links
+
+
+def test_make_page_links_13():
+    """make_page_links no pagination, empty query_params"""
+    url_base = "https://example.com"
+    links = torguapi.make_page_links({}, url_base, {})
+    assert {"self": url_base} == links
+
+
+def test_make_page_links_14():
+    """make_page_links no pagination, query_params with only page values"""
+    url_base = "https://example.com"
+    links = torguapi.make_page_links({}, url_base, {"page_size": "100"})
+    assert {"self": url_base} == links
+
+
+def test_torguapi_make_links_and_meta_4(monkeypatch):
+    """torguapi_make_links_and_meta with query_params"""
+    monkeypatch.setenv("API_ROOT", "https://example.com/")
+    aux = {"page_number": 2, "record_count": 1000, "page_size": 100}
+    query_params = {"foo": "123", "bar": "a b"}
+    links, meta = torguapi.torguapi_make_links_and_meta(aux, "foo/bar", query_params)
+    base = "https://example.com/foo/bar?bar=a%20b&foo=123"
+    expected_links = {
+        "self": f"{base}&page_number=2&page_size=100",
+        "previous": f"{base}&page_number=1&page_size=100",
+        "next": f"{base}&page_number=3&page_size=100",
+    }
+    expected_meta = {"page_count": 10, "record_count": 1000}
+    assert expected_links == links
+    assert expected_meta == meta
