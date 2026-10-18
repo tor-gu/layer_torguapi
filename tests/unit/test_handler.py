@@ -1,5 +1,9 @@
 import json
+import os
+import subprocess
+import sys
 from http import HTTPStatus
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -109,6 +113,67 @@ def test_torguapi_result_4():
     result = torguapi.torguapi_result(df, links)
     status_code = result["statusCode"]
     assert HTTPStatus.NOT_FOUND == status_code
+
+
+def test_torguapi_result_5():
+    """torguapi_result test list of dicts"""
+    records = [{"x": 1, "y": "a"}, {"x": 2, "y": "b"}]
+    links = {"self": "foo", "next": "bar"}
+    result = torguapi.torguapi_result(records, links)
+    body = json.loads(result["body"])
+    status_code = result["statusCode"]
+    assert HTTPStatus.OK == status_code
+    assert links == body["links"]
+    assert records == body["data"]
+    assert "meta" not in body
+
+
+def test_torguapi_result_6():
+    """torguapi_result test list of dicts with nonempty meta"""
+    records = [{"x": 1, "y": "a"}]
+    links = {}
+    meta = {"foo": "bar"}
+    result = torguapi.torguapi_result(records, links, meta)
+    body = json.loads(result["body"])
+    status_code = result["statusCode"]
+    assert HTTPStatus.OK == status_code
+    assert meta == body["meta"]
+
+
+def test_torguapi_result_7():
+    """torguapi_result test empty list"""
+    links = {}
+    result = torguapi.torguapi_result([], links)
+    status_code = result["statusCode"]
+    assert HTTPStatus.NOT_FOUND == status_code
+
+
+def test_torguapi_result_8():
+    """torguapi_result test generator of dicts"""
+    records = [{"x": 1, "y": "a"}, {"x": 2, "y": "b"}]
+    links = {}
+    result = torguapi.torguapi_result((record for record in records), links)
+    body = json.loads(result["body"])
+    assert HTTPStatus.OK == result["statusCode"]
+    assert records == body["data"]
+    result = torguapi.torguapi_result((record for record in []), links)
+    assert HTTPStatus.NOT_FOUND == result["statusCode"]
+
+
+def test_torguapi_result_9():
+    """torguapi_result with a list of dicts does not import pandas"""
+    project_root = Path(__file__).resolve().parents[2]
+    code = (
+        "import sys\n"
+        "from torguapi import torguapi_result\n"
+        "torguapi_result([{'x': 1}], {})\n"
+        "assert 'pandas' not in sys.modules\n"
+    )
+    env = dict(os.environ, PYTHONPATH=str(project_root / "src"))
+    completed = subprocess.run(
+        [sys.executable, "-c", code], cwd=project_root, env=env, capture_output=True
+    )
+    assert 0 == completed.returncode, completed.stderr.decode()
 
 
 def test_make_page_link_1():

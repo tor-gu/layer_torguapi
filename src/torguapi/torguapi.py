@@ -107,19 +107,25 @@ def torguapi_result(result, links, meta=None):
     """
     Builds the HTTP reply object for a table of results.
 
-    If the result table is empty, this will be converted to a 404/Not Found
-    reply.
+    If the result is empty, this will be converted to a 404/Not Found reply.
 
     Args:
-        result: a pandas table of results
+        result: a pandas DataFrame, or an iterable of dicts (one per record)
         links: a links dict, as built by torguapi_make_links_and_meta
         meta: a meta dict, as build by torguapi_make_links_and_meta
     Returns:
         A dict with "header", "statusCode" and "body".
     """
-    if result.empty:
-        return torguapi_http_error(404)
-    body = {"data": result.to_dict(orient="records"), "links": links}
+    # Recognise a DataFrame by its methods, so this module never imports pandas
+    if hasattr(result, "to_dict"):
+        if result.empty:
+            return torguapi_http_error(404)
+        records = result.to_dict(orient="records")
+    else:
+        records = list(result)
+        if len(records) == 0:
+            return torguapi_http_error(404)
+    body = {"data": records, "links": links}
     if meta is not None and len(meta) > 0:
         body["meta"] = meta
     return make_torguapi_json(HTTPStatus.OK, body)
