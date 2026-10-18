@@ -248,3 +248,10 @@ pipeline-update*.sh
 .aws-sam/
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
+
+# Terraform (infra/, infra/github/); the lock files are committed
+.terraform/
+*.tfplan
+
+# Workflow settings; not a virtualenv despite the env/ rule above
+!pipeline/env/

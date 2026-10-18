@@ -1,6 +1,6 @@
 export PYTHONPATH = src
 
-src_dirs := src tests
+src_dirs := src tests scripts
 
 style:
 	python -m isort $(src_dirs)
@@ -11,6 +11,10 @@ test:
 
 build:
 	python -m build
+
+# The Lambda layer zip that infra/ publishes
+layer:
+	python scripts/build_layer.py
 
 all: style test build
 
