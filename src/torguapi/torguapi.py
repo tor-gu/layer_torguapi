@@ -36,16 +36,21 @@ def torguapi_get_page_parameters(query_parameters):
     if not page_size is None:
         if not page_size.isnumeric():
             raise TorguapiInvalidRequest(f"Invalid page_size {page_size}")
-        else:
+        try:
             page_params["page_size"] = int(page_size)
+        except ValueError:
+            # isnumeric() also passes "²" and strings too long for int()
+            raise TorguapiInvalidRequest(f"Invalid page_size {page_size}")
     if page_params["page_size"] < 1:
         raise TorguapiInvalidRequest(f"Invalid page_size {page_size}")
 
     if not page_number is None:
         if not page_number.isnumeric():
             raise TorguapiInvalidRequest(f"Invalid page_number {page_number}")
-        else:
+        try:
             page_params["page_number"] = int(page_number)
+        except ValueError:
+            raise TorguapiInvalidRequest(f"Invalid page_number {page_number}")
     return page_params
 
 

@@ -341,6 +341,18 @@ def test_torguapi_get_page_parameters_5():
         torguapi.torguapi_get_page_parameters(query_parameters)
 
 
+@pytest.mark.parametrize("parameter", ["page_size", "page_number"])
+@pytest.mark.parametrize(
+    "value",
+    ["²", "9" * 5000],
+    ids=["numeric_but_not_a_digit", "more_digits_than_int_allows"],
+)
+def test_torguapi_get_page_parameters_isnumeric_but_not_int(parameter, value):
+    """torguapi_get_page_parameters values that pass isnumeric() but not int()"""
+    with pytest.raises(torguapi.TorguapiInvalidRequest, match=f"Invalid {parameter}"):
+        torguapi.torguapi_get_page_parameters({parameter: value})
+
+
 def test_make_page_link_2():
     """make_page_link with query_params None or empty is unchanged"""
     base_url = "https://example.com"
